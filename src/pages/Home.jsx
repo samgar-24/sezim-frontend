@@ -6,10 +6,11 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/products/');
+        // Заменили локальный хост на адрес твоего бэкенда на Railway
+        const response = await axios.get('https://sezim-backend-production.up.railway.app/api/products/');
         setProducts(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке товаров:", error);

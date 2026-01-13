@@ -88,7 +88,11 @@ export default function Header() {
         </div>
       </div>
 
-      {isAuthModalOpen && <AuthModal onClose={() => setAuthModalOpen(false)} />}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-[9999]"> 
+          <AuthModal onClose={() => setAuthModalOpen(false)} />
+        </div>
+      )}
     </header>
   );
 }

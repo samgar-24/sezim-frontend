@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // Импортируем хук авторизации
+import { useAuth } from './AuthContext';
 
+// Компоненты
 import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
+import AuthModal from './components/AuthModal';
+
+// Страницы (убедитесь, что пути верны)
 import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
 import Checkout from './pages/Checkout';
@@ -14,16 +19,18 @@ import Register from './pages/Register';
 import MyOrders from './pages/MyOrders';
 
 function App() {
+  // Извлекаем isAuthenticated и user из контекста для защиты роутов
   const { isAuthenticated, user, loading } = useAuth();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
+  // Ждем окончания загрузки пользователя, чтобы не редиректить раньше времени
   if (loading) return null;
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] flex flex-col">
-      <Header />
+      {/* Передаем функцию открытия в Header */}
+      <Header onOpenAuth={() => setIsAuthOpen(true)} />
 
-      {/* Добавляем flex-grow, чтобы контент занимал всё пространство, 
-          и relative, чтобы дочерние абсолютные элементы не вылетали */}
       <main className="flex-grow relative">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -36,11 +43,11 @@ function App() {
           {/* Маршруты для авторизованных пользователей */}
           <Route 
             path="/profile" 
-            element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
+            element={isAuthenticated ? <Profile /> : <Navigate to="/" />} 
           />
           <Route 
             path="/my-orders" 
-            element={isAuthenticated ? <MyOrders /> : <Navigate to="/login" />} 
+            element={isAuthenticated ? <MyOrders /> : <Navigate to="/" />} 
           />
 
           {/* Маршрут для админа */}
@@ -55,6 +62,9 @@ function App() {
       </main>
 
       <CartDrawer />
+
+      {/* Теперь модалка рендерится здесь — вне контекста хедера */}
+      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
     </div>
   );
 }

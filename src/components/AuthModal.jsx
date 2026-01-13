@@ -16,57 +16,89 @@ export default function AuthModal({ onClose }) {
       : await register(formData);
 
     if (result.success) {
-      onClose(); // Закрываем окно при успехе
+      onClose(); 
     } else {
       setError(result.error);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl p-8 relative shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-black text-2xl">&times;</button>
+    /* Внешний контейнер (Overlay) */
+    <div 
+      className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
+      onClick={onClose} // Закрытие при клике на фон
+    >
+      {/* Карточка формы */}
+      <div 
+        className="bg-white w-full max-w-md rounded-[40px] p-8 md:p-12 relative shadow-2xl animate-in fade-in zoom-in duration-300"
+        onClick={(e) => e.stopPropagation()} // Чтобы клик внутри формы не закрывал её
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-6 right-6 text-zinc-400 hover:text-black transition-colors"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
         
-        <h2 className="text-2xl font-black mb-2 uppercase tracking-tighter">
-          {isLogin ? 'С возвращением' : 'Создать аккаунт'}
-        </h2>
-        <p className="text-zinc-400 text-sm mb-6">Введите ваши данные ниже</p>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-black uppercase tracking-tighter italic">
+            {isLogin ? 'Вход' : 'Регистрация'}
+          </h2>
+          <p className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-2">
+            {isLogin ? 'С возвращением в Sezim' : 'Присоединяйтесь к нам'}
+          </p>
+        </div>
 
-        {error && <div className="bg-red-50 text-red-500 p-3 rounded-lg text-xs font-bold mb-4">{error}</div>}
+        {error && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-[10px] font-bold uppercase mb-6 border border-red-100">
+            {error}
+          </div>
+        )}
         
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <input 
-              type="text" 
-              placeholder="Имя" 
-              required
-              className="w-full p-3 bg-zinc-100 rounded-lg outline-none focus:ring-2 ring-black/5"
-              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-            />
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase ml-2 text-zinc-400">Ваше имя</label>
+              <input 
+                type="text" 
+                placeholder="Имя" 
+                required
+                className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+              />
+            </div>
           )}
-          <input 
-            type="email" 
-            placeholder="Email" 
-            required
-            className="w-full p-3 bg-zinc-100 rounded-lg outline-none"
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-          />
-          <input 
-            type="password" 
-            placeholder="Пароль" 
-            required
-            className="w-full p-3 bg-zinc-100 rounded-lg outline-none"
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-          />
           
-          <button className="w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-zinc-800 transition-all mt-4">
-            {isLogin ? 'ВОЙТИ' : 'ЗАРЕГИСТРИРОВАТЬСЯ'}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase ml-2 text-zinc-400">Email</label>
+            <input 
+              type="email" 
+              placeholder="example@mail.com" 
+              required
+              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase ml-2 text-zinc-400">Пароль</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              required
+              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+              onChange={(e) => setFormData({...formData, password: e.target.value})}
+            />
+          </div>
+          
+          <button className="w-full bg-black text-white font-black py-5 rounded-2xl hover:bg-zinc-800 transition-all mt-4 uppercase text-xs tracking-widest active:scale-95">
+            {isLogin ? 'Войти' : 'Создать аккаунт'}
           </button>
         </form>
 
         <button 
           onClick={() => { setIsLogin(!isLogin); setError(''); }} 
-          className="w-full mt-6 text-sm font-bold text-zinc-400 hover:text-black transition"
+          className="w-full mt-8 text-[10px] font-black text-zinc-400 hover:text-black transition uppercase tracking-tighter"
         >
           {isLogin ? 'У меня нет аккаунта →' : 'Уже есть аккаунт? Войти'}
         </button>

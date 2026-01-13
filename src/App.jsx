@@ -16,16 +16,16 @@ import MyOrders from './pages/MyOrders';
 function App() {
   const { isAuthenticated, user, loading } = useAuth();
 
-  // Пока данные пользователя грузятся, ничего не рендерим, чтобы не было редиректов
   if (loading) return null;
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc]">
+    <div className="min-h-screen bg-[#fcfcfc] flex flex-col">
       <Header />
 
-      <main>
+      {/* Добавляем flex-grow, чтобы контент занимал всё пространство, 
+          и relative, чтобы дочерние абсолютные элементы не вылетали */}
+      <main className="flex-grow relative">
         <Routes>
-          {/* Публичные маршруты */}
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -36,11 +36,11 @@ function App() {
           {/* Маршруты для авторизованных пользователей */}
           <Route 
             path="/profile" 
-            element={isAuthenticated ? <Profile /> : <Navigate to="/" />} 
+            element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/my-orders" 
-            element={isAuthenticated ? <MyOrders /> : <Navigate to="/" />} 
+            element={isAuthenticated ? <MyOrders /> : <Navigate to="/login" />} 
           />
 
           {/* Маршрут для админа */}

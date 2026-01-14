@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
-
-const BACKEND_URL = 'https://sezim-backend-production.up.railway.app';
+// Импортируем наш клиент и константу для картинок
+import api, { BACKEND_URL } from '../api';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -11,7 +10,8 @@ export default function Home() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${BACKEND_URL}/api/products/`);
+        // Теперь путь относительный, api.js сам добавит базу
+        const response = await api.get('/products/');
         setProducts(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке товаров:", error);
@@ -50,7 +50,7 @@ export default function Home() {
             Новая коллекция
           </h1>
           <span className="text-[10px] font-medium text-[#BBBCB9] uppercase tracking-widest pb-1">
-            Drop 26.0
+            Drop 2026
           </span>
         </div>
       </div>
@@ -66,14 +66,13 @@ export default function Home() {
             {/* Контейнер фото */}
             <div className="aspect-[3/4] rounded-[32px] md:rounded-[48px] overflow-hidden bg-[#F7F6F3] relative mb-5">
               <img 
-                // ИСПРАВЛЕНА ТОЛЬКО ЭТА СТРОКА ДЛЯ ЗАГРУЗКИ ФОТО
+                // Правильная склейка URL картинки
                 src={product.image?.startsWith('http') ? product.image : `${BACKEND_URL}${product.image}`} 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" 
                 alt={product.name}
               />
               <div className="absolute inset-0 bg-[#2B2929]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              {/* Послание SEZIM на карточке */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[#F0EEE9]/40 backdrop-blur-[2px]">
                  <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-[#2B2929]">
                     открой чувства
@@ -87,7 +86,7 @@ export default function Home() {
                 {product.name}
               </h3>
               <p className="text-[9px] md:text-[10px] text-[#BBBCB9] font-medium uppercase tracking-[0.15em] mb-2">
-                {product.category}
+                {product.category_name || product.category}
               </p>
               <div className="flex items-center gap-3">
                 <p className="text-sm md:text-lg font-light italic text-[#2B2929]">

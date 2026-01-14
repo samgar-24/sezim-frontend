@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import api from './api'; // Импортируем ваш настроенный экземпляр
+import api from './api';
 
 const AuthContext = createContext();
 
@@ -8,15 +8,15 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  const fetchMe = async (currentToken) => {
+  // Получение данных о текущем пользователе
+  const fetchMe = async () => {
     try {
-      // Используем api вместо axios
-      const res = await api.get('/me/', {
-        headers: { Authorization: `Bearer ${currentToken}` }
-      });
+      // Благодаря api.js токен прикрепится сам из localStorage
+      const res = await api.get('/me/');
       setUser(res.data);
     } catch (err) {
-      console.error("Ошибка загрузки профиля", err);
+      console.error("Ошибка загрузки профиля:", err.response?.data || err.message);
+      // Если токен протух или неверный — разлогиниваем
       if (err.response?.status === 401) logout();
     } finally {
       setLoading(false);
@@ -24,18 +24,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      fetchMe(savedToken);
+    if (token) {
+      fetchMe();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
+  // Вход
   const login = async (email, password) => {
     try {
-      // ВАЖНО: Django SimpleJWT ожидает 'username'
+      // Django SimpleJWT ожидает 'username'
       const res = await api.post('/login/', { 
         username: email, 
         password: password 
@@ -43,15 +42,35 @@ export const AuthProvider = ({ children }) => {
       
       const newToken = res.data.access;
       localStorage.setItem('token', newToken);
-      setToken(newToken);
-      await fetchMe(newToken);
+      setToken(newToken); // Это сработает useEffect и вызовет fetchMe
       return { success: true };
     } catch (err) {
-      // Выводим реальную ошибку в консоль, чтобы не было "тишины"
-      console.error("Login detail error:", err.response?.data);
+      console.error("Login error:", err.response?.data);
       return { 
         success: false, 
-        error: err.response?.data?.detail || 'Ошибка авторизации' 
+        error: err.response?.data?.detail || 'Неверный логин или пароль' 
+      };
+    }
+  };
+
+  // Регистрация (добавлена для комплекта)
+  const register = async (userData) => {
+    try {
+      // Предполагаем, что бэкенд ждет first_name, email, password
+      const res = await api.post('/register/', {
+        username: userData.email, // Используем email как username
+        email: userData.email,
+        password: userData.password,
+        first_name: userData.firstName
+      });
+      
+      // После регистрации сразу логиним
+      return await login(userData.email, userData.password);
+    } catch (err) {
+      console.error("Register error:", err.response?.data);
+      return { 
+        success: false, 
+        error: err.response?.data?.error || 'Ошибка при регистрации' 
       };
     }
   };
@@ -60,11 +79,23 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    window.location.href = '/';
+    // Не используем window.location.href, чтобы не перезагружать всё приложение жестко, 
+    // но если нужно очистить все стейты — можно оставить.
+    window.location.href = '/'; 
+  };
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!token,
+    login,
+    register,
+    logout,
+    loading
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   );

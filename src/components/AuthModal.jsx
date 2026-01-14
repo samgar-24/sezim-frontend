@@ -5,19 +5,25 @@ export default function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ email: '', password: '', firstName: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Добавили состояние загрузки
   const { login, register } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     
+    // Вызываем нужный метод из контекста
     const result = isLogin 
       ? await login(formData.email, formData.password)
       : await register(formData);
 
+    setLoading(false);
+
     if (result.success) {
       onClose(); 
     } else {
+      // Выводим ошибку, которую вернул бэкенд
       setError(result.error);
     }
   };
@@ -26,12 +32,12 @@ export default function AuthModal({ onClose }) {
     /* Внешний контейнер (Overlay) */
     <div 
       className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
-      onClick={onClose} // Закрытие при клике на фон
+      onClick={onClose}
     >
       {/* Карточка формы */}
       <div 
         className="bg-white w-full max-w-md rounded-[40px] p-8 md:p-12 relative shadow-2xl animate-in fade-in zoom-in duration-300"
-        onClick={(e) => e.stopPropagation()} // Чтобы клик внутри формы не закрывал её
+        onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose} 
@@ -50,7 +56,7 @@ export default function AuthModal({ onClose }) {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-[10px] font-bold uppercase mb-6 border border-red-100">
+          <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-[10px] font-bold uppercase mb-6 border border-red-100 animate-pulse text-center">
             {error}
           </div>
         )}
@@ -63,7 +69,7 @@ export default function AuthModal({ onClose }) {
                 type="text" 
                 placeholder="Имя" 
                 required
-                className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+                className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all font-medium"
                 onChange={(e) => setFormData({...formData, firstName: e.target.value})}
               />
             </div>
@@ -75,7 +81,7 @@ export default function AuthModal({ onClose }) {
               type="email" 
               placeholder="example@mail.com" 
               required
-              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all font-medium"
               onChange={(e) => setFormData({...formData, email: e.target.value})}
             />
           </div>
@@ -86,13 +92,20 @@ export default function AuthModal({ onClose }) {
               type="password" 
               placeholder="••••••••" 
               required
-              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all"
+              className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 ring-black transition-all font-medium"
               onChange={(e) => setFormData({...formData, password: e.target.value})}
             />
           </div>
           
-          <button className="w-full bg-black text-white font-black py-5 rounded-2xl hover:bg-zinc-800 transition-all mt-4 uppercase text-xs tracking-widest active:scale-95">
-            {isLogin ? 'Войти' : 'Создать аккаунт'}
+          <button 
+            disabled={loading}
+            className={`w-full bg-black text-white font-black py-5 rounded-2xl transition-all mt-4 uppercase text-xs tracking-widest active:scale-95 flex items-center justify-center ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-zinc-800'}`}
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              isLogin ? 'Войти' : 'Создать аккаунт'
+            )}
           </button>
         </form>
 

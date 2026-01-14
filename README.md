@@ -22,3 +22,7 @@ python manage.py runserver
 
 python manage.py makemigrations
 python manage.py migrate
+
+git add .
+git commit -m "Fix: added OrderItem and address fields, fixed mail timeout"
+git push origin main

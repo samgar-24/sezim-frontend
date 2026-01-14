@@ -1,8 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-// Устанавливаем базовый URL, чтобы не повторять его в каждом запросе
-axios.defaults.baseURL = 'https://sezim-backend-production.up.railway.app';
+import api from './api'; // Импортируем ваш настроенный экземпляр
 
 const AuthContext = createContext();
 
@@ -13,8 +10,8 @@ export const AuthProvider = ({ children }) => {
 
   const fetchMe = async (currentToken) => {
     try {
-      // Исправлено: теперь используем относительный путь /api/me/
-      const res = await axios.get('/api/me/', {
+      // Используем api вместо axios
+      const res = await api.get('/me/', {
         headers: { Authorization: `Bearer ${currentToken}` }
       });
       setUser(res.data);
@@ -26,11 +23,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Проверка токена при обновлении страницы
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      setToken(savedToken);
       fetchMe(savedToken);
     } else {
       setLoading(false);
@@ -39,20 +35,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Исправлено: теперь используем относительный путь /api/login/
-      const res = await axios.post('/api/login/', { 
+      // ВАЖНО: Django SimpleJWT ожидает 'username'
+      const res = await api.post('/login/', { 
         username: email, 
         password: password 
       });
       
       const newToken = res.data.access;
       localStorage.setItem('token', newToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       setToken(newToken);
       await fetchMe(newToken);
       return { success: true };
     } catch (err) {
-      return { success: false, error: 'Неверный логин или пароль' };
+      // Выводим реальную ошибку в консоль, чтобы не было "тишины"
+      console.error("Login detail error:", err.response?.data);
+      return { 
+        success: false, 
+        error: err.response?.data?.detail || 'Ошибка авторизации' 
+      };
     }
   };
 
@@ -60,21 +60,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
     window.location.href = '/';
   };
 
-  const value = {
-    user,
-    token,
-    isAuthenticated: !!token,
-    login,
-    logout,
-    loading
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, logout, loading }}>
       {!loading && children}
     </AuthContext.Provider>
   );

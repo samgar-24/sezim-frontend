@@ -7,16 +7,18 @@ export default function Profile() {
   const [orders, setOrders] = useState([]);
   const [searchId, setSearchId] = useState('');
   const { token, isAuthenticated, user } = useAuth();
+  const BACKEND_URL = 'https://sezim-backend-production.up.railway.app';
 
   useEffect(() => {
     if (isAuthenticated) {
-      axios.get('http://127.0.0.1:8000/api/my-orders/', {
+      // Замена 127.0.0.1 на BACKEND_URL
+      axios.get(`${BACKEND_URL}/api/my-orders/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => setOrders(res.data))
       .catch(err => console.error(err));
     }
-  }, [token, isAuthenticated]);
+  }, [token, isAuthenticated, BACKEND_URL]);
 
   if (!isAuthenticated) return (
     <div className="p-10 md:p-20 text-center font-bold text-zinc-400">Войдите в систему</div>

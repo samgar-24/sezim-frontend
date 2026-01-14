@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+const BACKEND_URL = 'https://sezim-backend-production.up.railway.app';
+
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Заменили локальный хост на адрес твоего бэкенда на Railway
-        const response = await axios.get('https://sezim-backend-production.up.railway.app/api/products/');
+        const response = await axios.get(`${BACKEND_URL}/api/products/`);
         setProducts(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке товаров:", error);
@@ -30,7 +31,7 @@ useEffect(() => {
   return (
     <main className="max-w-[1400px] mx-auto px-4 md:px-8 py-10 md:py-20">
       
-      {/* СЕКЦИЯ БРЕНД ПЛАТФОРМЫ (Reveal анимация) */}
+      {/* СЕКЦИЯ БРЕНД ПЛАТФОРМЫ */}
       <section className="mb-24 mt-4 text-center px-4 reveal">
         <h2 className="text-[9px] md:text-[11px] font-medium uppercase tracking-[0.5em] text-[#BBBCB9] mb-8">
           sezim — kózge korinbeitin
@@ -62,25 +63,25 @@ useEffect(() => {
             key={product.id} 
             className={`group flex flex-col reveal delay-${(index % 4) + 1}`}
           >
-            {/* Контейнер фото (Используем Stalactite для фона) */}
+            {/* Контейнер фото */}
             <div className="aspect-[3/4] rounded-[32px] md:rounded-[48px] overflow-hidden bg-[#F7F6F3] relative mb-5">
               <img 
-                src={product.image} 
+                // ИСПРАВЛЕНА ТОЛЬКО ЭТА СТРОКА ДЛЯ ЗАГРУЗКИ ФОТО
+                src={product.image?.startsWith('http') ? product.image : `${BACKEND_URL}${product.image}`} 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" 
                 alt={product.name}
               />
-              {/* Легкий оверлей при наведении */}
               <div className="absolute inset-0 bg-[#2B2929]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              {/* Послание SEZIM на карточке (скрытое) */}
+              {/* Послание SEZIM на карточке */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[#F0EEE9]/40 backdrop-blur-[2px]">
                  <span className="text-[9px] uppercase tracking-[0.3em] font-medium text-[#2B2929]">
-                   открой чувства
+                    открой чувства
                  </span>
               </div>
             </div>
 
-            {/* Инфо (Используем Meteorite для текста) */}
+            {/* Инфо */}
             <div className="px-2">
               <h3 className="text-[11px] md:text-sm font-medium uppercase tracking-tight text-[#2B2929] mb-1 group-hover:opacity-60 transition-opacity">
                 {product.name}

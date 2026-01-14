@@ -6,10 +6,14 @@ export default function Register() {
   const [formData, setFormData] = useState({ firstName: '', email: '', password: '' });
   const navigate = useNavigate();
 
+  // Актуальный URL для Railway
+  const BACKEND_URL = 'https://sezim-backend-production.up.railway.app'; 
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://127.0.0.1:8000/api/register/', formData);
+      // Замена 127.0.0.1 на BACKEND_URL
+      await axios.post(`${BACKEND_URL}/api/register/`, formData);
       alert('Аккаунт создан! Теперь вы можете войти.');
       navigate('/login');
     } catch (err) {

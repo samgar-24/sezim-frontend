@@ -7,7 +7,7 @@ import Header from './components/Header';
 import CartDrawer from './components/CartDrawer';
 import AuthModal from './components/AuthModal';
 
-// Страницы (убедитесь, что пути верны)
+// Страницы
 import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
 import Checkout from './pages/Checkout';
@@ -19,16 +19,13 @@ import Register from './pages/Register';
 import MyOrders from './pages/MyOrders';
 
 function App() {
-  // Извлекаем isAuthenticated и user из контекста для защиты роутов
   const { isAuthenticated, user, loading } = useAuth();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  // Ждем окончания загрузки пользователя, чтобы не редиректить раньше времени
   if (loading) return null;
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] flex flex-col">
-      {/* Передаем функцию открытия в Header */}
       <Header onOpenAuth={() => setIsAuthOpen(true)} />
 
       <main className="flex-grow relative">
@@ -40,7 +37,6 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Маршруты для авторизованных пользователей */}
           <Route 
             path="/profile" 
             element={isAuthenticated ? <Profile /> : <Navigate to="/" />} 
@@ -50,7 +46,6 @@ function App() {
             element={isAuthenticated ? <MyOrders /> : <Navigate to="/" />} 
           />
 
-          {/* Маршрут для админа */}
           <Route 
             path="/admin-panel" 
             element={isAuthenticated && (user?.is_staff || user?.username === 'admin') 
@@ -62,8 +57,6 @@ function App() {
       </main>
 
       <CartDrawer />
-
-      {/* Теперь модалка рендерится здесь — вне контекста хедера */}
       {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
     </div>
   );

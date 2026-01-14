@@ -4,6 +4,9 @@ import axios from 'axios';
 import { useCart } from '../CartContext';
 import { useAuth } from '../AuthContext';
 
+// Указываем адрес твоего бэкенда на Railway
+const BACKEND_URL = 'https://sezim-backend-production.up.railway.app';
+
 export default function Checkout() {
   const { cartItems, totalPrice, clearCart } = useCart(); 
   const { token, isAuthenticated } = useAuth();
@@ -40,13 +43,14 @@ export default function Checkout() {
             price: item.price,
             quantity: item.quantity,
             image: item.image,
-            size: item.size // Добавляем размер в заказ
+            size: item.size 
         }))
     };
 
     try {
         const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-        const response = await axios.post('http://127.0.0.1:8000/api/orders/', orderData, config);
+        // ЗАМЕНЕНО: Отправляем запрос на Railway вместо localhost
+        const response = await axios.post(`${BACKEND_URL}/api/orders/`, orderData, config);
         const newTrackId = response.data.track_id;
 
         alert(`Заказ успешно оформлен! Номер: ${newTrackId}`);
@@ -75,7 +79,7 @@ export default function Checkout() {
       
       <div className="flex flex-col lg:flex-row gap-10">
         
-        {/* 1. ПРАВАЯ ЧАСТЬ (На мобилках первая) */}
+        {/* ПРАВАЯ ЧАСТЬ: ИТОГИ */}
         <div className="w-full lg:w-[450px] order-1 lg:order-2">
           <div className="bg-zinc-50 p-6 md:p-10 rounded-[40px] sticky top-28 border border-zinc-100">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-8 text-zinc-400">Ваш заказ</h2>
@@ -83,7 +87,12 @@ export default function Checkout() {
               {cartItems.map((item, idx) => (
                 <div key={idx} className="flex gap-4 items-center">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border border-zinc-100 shrink-0">
-                    <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                    <img 
+                      // ЗАМЕНЕНО: Добавлена логика отображения фото с бэкенда
+                      src={item.image?.startsWith('http') ? item.image : `${BACKEND_URL}${item.image}`} 
+                      className="w-full h-full object-cover" 
+                      alt={item.name} 
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-black uppercase truncate leading-tight">{item.name}</p>
@@ -109,7 +118,7 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* 2. ЛЕВАЯ ЧАСТЬ (ФОРМА) */}
+        {/* ЛЕВАЯ ЧАСТЬ: ФОРМА */}
         <div className="flex-1 order-2 lg:order-1">
           <div className="space-y-10">
             {/* Контакты */}
@@ -157,7 +166,6 @@ export default function Checkout() {
               </div>
             </section>
 
-            {/* Кнопка подтверждения */}
             <button 
               onClick={handleOrder}
               className="w-full bg-black text-white py-6 rounded-[28px] font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-all active:scale-[0.97] shadow-2xl shadow-zinc-200"
